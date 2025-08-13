@@ -1,249 +1,171 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Rifa </title>
-  <style>
+<meta charset="UTF-8">
+<title>Rifa</title>
+<style>
     body {
-      font-family: Arial, sans-serif;
-      max-width: 720px;
-      margin: 20px auto;
-      padding: 0 10px;
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background: #f5f5f5;
+    }
+    h2 {
+        color: #333;
     }
     table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
+        border-collapse: collapse;
+        width: 100%;
+        margin-bottom: 20px;
     }
     th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+    th {
+        background-color: #4CAF50;
+        color: white;
+    }
+    .private {
+        background: white;
+        padding: 15px;
+        border-radius: 5px;
+        display: none;
+    }
+    .form-input {
+        margin: 5px 0;
+        padding: 8px;
+        width: 100%;
+        box-sizing: border-box;
     }
     button {
-      padding: 8px 12px;
-      margin: 6px 0;
-      cursor: pointer;
+        padding: 8px 15px;
+        background: #4CAF50;
+        border: none;
+        color: white;
+        cursor: pointer;
     }
-    #loginPanel {
-      border: 1px solid #ddd;
-      padding: 12px;
-      margin: 10px 0;
-      display: none;
+    button:hover {
+        background: #45a049;
     }
-    #formRegistro {
-      margin-top: 20px;
-      border: 1px solid #ddd;
-      padding: 12px;
-      display: none;
-    }
-    #msg {
-      margin-top: 10px;
-      padding: 8px;
-      border-radius: 6px;
-      display: none;
-    }
-    #msg.ok { background-color: #daf5d7; color: #2b7a0b; }
-    #msg.error { background-color: #f8d7da; color: #a31e2e; }
-  </style>
+</style>
 </head>
 <body>
-  <h1>Rifa pública</h1>
 
-  <button id="btnShowLogin">Ingresar token para registrar y ver contactos</button>
-
-  <div id="loginPanel">
-    <label for="tokenInput">Token:</label>
-    <input type="password" id="tokenInput" />
-    <button id="btnLogin">Validar token</button>
-  </div>
-
-  <h2>Lista pública (Números y nombres)</h2>
-  <table id="tablaPublica">
+<h2>Tabla Pública</h2>
+<table id="publicTable">
     <thead>
-      <tr><th>Número</th><th>Nombre</th></tr>
+        <tr>
+            <th>Número</th>
+            <th>Nombre</th>
+        </tr>
     </thead>
     <tbody></tbody>
-  </table>
+</table>
 
-  <div id="formRegistro">
-    <h2>Registro de número</h2>
-    <label for="numero">Número:</label>
-    <input type="number" id="numero" min="1" /><br />
-    <label for="nombre">Nombre:</label>
-    <input type="text" id="nombre" /><br />
-    <label for="contacto">Contacto:</label>
-    <input type="text" id="contacto" /><br />
-    <button id="btnRegistrar">Registrar</button>
+<h2>Acceso Privado</h2>
+<input type="password" id="password" class="form-input" placeholder="Contraseña">
+<button onclick="checkPassword()">Ingresar</button>
 
-    <h2>Lista completa (con contacto)</h2>
-    <table id="tablaCompleta">
-      <thead>
-        <tr><th>Número</th><th>Nombre</th><th>Contacto</th><th>Fecha</th></tr>
-      </thead>
-      <tbody></tbody>
+<div id="privateSection" class="private">
+    <h3>Tabla Privada</h3>
+    <table id="privateTable">
+        <thead>
+            <tr>
+                <th>Número</th>
+                <th>Nombre</th>
+                <th>Contacto</th>
+                <th>Fecha</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
     </table>
-  </div>
 
-  <div id="msg"></div>
+    <h3>Registrar Nuevo</h3>
+    <input type="number" id="numero" class="form-input" placeholder="Número">
+    <input type="text" id="nombre" class="form-input" placeholder="Nombre">
+    <input type="text" id="contacto" class="form-input" placeholder="Contacto">
+    <button onclick="registrar()">Registrar</button>
+</div>
 
-  <script>
-    // Cambiar por la URL de tu Web App
-    const API_URL = "https://script.google.com/macros/s/AKfycbz2k1YPW4dEG4Hxb9A9J_-9b1MhakBSD-6x7fxduME62Otw0LnWp66IMkNazJH1jG7p/exec";
-    let token = sessionStorage.getItem("token") || null;
+<script>
+const SHEET_URL = "TU_WEB_APP_URL"; // Aquí la URL desplegada de Google Apps Script
+const PASSWORD = "1234"; // Cambia la contraseña
 
-    const $ = (sel) => document.querySelector(sel);
-    const tablaPublicaBody = $("#tablaPublica tbody");
-    const tablaCompletaBody = $("#tablaCompleta tbody");
-    const msgBox = $("#msg");
-    const loginPanel = $("#loginPanel");
-    const formRegistro = $("#formRegistro");
-    const btnShowLogin = $("#btnShowLogin");
-
-    async function fetchPublic() {
-      try {
-        const res = await fetch(API_URL);
-        const json = await res.json();
-        if (!json.ok) throw new Error(json.error || "Error al cargar datos");
-        renderPublic(json.data);
-      } catch (e) {
-        showMsg(e.message, true);
-      }
-    }
-
-    async function fetchPrivado() {
-      try {
-        const res = await fetch(API_URL + "?token=" + encodeURIComponent(token));
-        const json = await res.json();
-        if (!json.ok) throw new Error(json.error || "Token inválido");
-        renderPrivado(json.data);
-      } catch (e) {
-        showMsg(e.message, true);
-        logout();
-      }
-    }
-
-    function renderPublic(data) {
-      tablaPublicaBody.innerHTML = "";
-      data.forEach(({ numero, nombre }) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${numero}</td><td>${nombre}</td>`;
-        tablaPublicaBody.appendChild(tr);
-      });
-    }
-
-    function renderPrivado(data) {
-      tablaCompletaBody.innerHTML = "";
-      data.forEach(({ numero, nombre, contacto, fecha }) => {
-        const fechaStr = fecha ? new Date(fecha).toLocaleString() : "";
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${numero}</td><td>${nombre}</td><td>${contacto}</td><td>${fechaStr}</td>`;
-        tablaCompletaBody.appendChild(tr);
-      });
-    }
-
-    function showMsg(text, isError = false) {
-      msgBox.textContent = text;
-      msgBox.className = isError ? "error" : "ok";
-      msgBox.style.display = "block";
-      setTimeout(() => (msgBox.style.display = "none"), 3500);
-    }
-
-    async function registrar() {
-      const numero = $("#numero").value.trim();
-      const nombre = $("#nombre").value.trim();
-      const contacto = $("#contacto").value.trim();
-
-      if (!numero || !nombre) {
-        showMsg("Número y nombre son obligatorios.", true);
-        return;
-      }
-
-      try {
-        const res = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ numero, nombre, contacto, token }),
+function cargarPublica() {
+    fetch(SHEET_URL)
+    .then(res => res.json())
+    .then(data => {
+        let tbody = document.querySelector("#publicTable tbody");
+        tbody.innerHTML = "";
+        data.public.forEach(row => {
+            let tr = document.createElement("tr");
+            tr.innerHTML = `<td>${row.numero}</td><td>${row.nombre}</td>`;
+            tbody.appendChild(tr);
         });
-        const json = await res.json();
-        if (!json.ok) {
-          showMsg(json.error || "Error al registrar.", true);
-          return;
-        }
-        showMsg("Registro exitoso.");
-        cargarPrivado();
-        cargarPublico();
-        $("#numero").value = "";
-        $("#nombre").value = "";
-        $("#contacto").value = "";
-      } catch (e) {
-        showMsg("Error de red.", true);
-      }
-    }
-
-    function logout() {
-      token = null;
-      sessionStorage.removeItem("token");
-      formRegistro.style.display = "none";
-      loginPanel.style.display = "none";
-      btnShowLogin.style.display = "inline-block";
-      cargarPublico();
-    }
-
-    function login() {
-      loginPanel.style.display = "block";
-      btnShowLogin.style.display = "none";
-      $("#tokenInput").value = "";
-      $("#tokenInput").focus();
-    }
-
-    async function validarToken() {
-      const t = $("#tokenInput").value.trim();
-      if (!t) {
-        showMsg("Ingresá el token.", true);
-        return;
-      }
-      try {
-        const res = await fetch(API_URL + "?token=" + encodeURIComponent(t));
-        const json = await res.json();
-        if (!json.ok) {
-          showMsg("Token inválido.", true);
-          return;
-        }
-        token = t;
-        sessionStorage.setItem("token", token);
-        showMsg("Token válido. Acceso concedido.");
-        loginPanel.style.display = "none";
-        formRegistro.style.display = "block";
-        cargarPrivado();
-      } catch {
-        showMsg("Error de red.", true);
-      }
-    }
-
-    async function cargarPublico() {
-      await fetchPublic();
-    }
-
-    async function cargarPrivado() {
-      if (!token) return;
-      await fetchPrivado();
-    }
-
-    btnShowLogin.addEventListener("click", login);
-    $("#btnLogin").addEventListener("click", validarToken);
-    $("#btnRegistrar").addEventListener("click", registrar);
-
-    // Al cargar la página
-    window.addEventListener("DOMContentLoaded", () => {
-      cargarPublico();
-      if (token) {
-        formRegistro.style.display = "block";
-        btnShowLogin.style.display = "none";
-        cargarPrivado();
-      }
     });
-  </script>
+}
+
+function checkPassword() {
+    let pass = document.getElementById("password").value;
+    if (pass === PASSWORD) {
+        document.getElementById("privateSection").style.display = "block";
+        cargarPrivada();
+    } else {
+        alert("Contraseña incorrecta");
+    }
+}
+
+function cargarPrivada() {
+    fetch(SHEET_URL)
+    .then(res => res.json())
+    .then(data => {
+        let tbody = document.querySelector("#privateTable tbody");
+        tbody.innerHTML = "";
+        data.private.forEach(row => {
+            let tr = document.createElement("tr");
+            tr.innerHTML = `<td>${row.numero}</td><td>${row.nombre}</td><td>${row.contacto}</td><td>${row.fecha}</td>`;
+            tbody.appendChild(tr);
+        });
+    });
+}
+
+function registrar() {
+    let numero = document.getElementById("numero").value;
+    let nombre = document.getElementById("nombre").value;
+    let contacto = document.getElementById("contacto").value;
+
+    if (!numero || !nombre || !contacto) {
+        alert("Completa todos los campos");
+        return;
+    }
+
+    let data = {
+        numero: numero,
+        nombre: nombre,
+        contacto: contacto
+    };
+
+    fetch(SHEET_URL, {
+        method: "POST",
+        redirect: "follow",
+        body: JSON.stringify(data),
+        headers: { "Content-Type": "text/plain" }
+    })
+    .then(response => {
+        if (response.ok) {
+            alert("Registrado correctamente");
+            cargarPublica();
+            cargarPrivada();
+        } else {
+            alert("Error al registrar");
+        }
+    });
+}
+
+// Cargar pública al inicio
+cargarPublica();
+</script>
+
 </body>
 </html>
