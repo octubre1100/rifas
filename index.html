@@ -200,7 +200,45 @@ function registrar() {
   })
   .catch(err => showError(err.message));
 }
+/*function doGet(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var rows = sheet.getDataRange().getValues();
+  
+  var publicData = [];
+  var privateData = [];
 
+  for (var i = 1; i < rows.length; i++) {
+    publicData.push({
+      numero: rows[i][0],
+      nombre: rows[i][1]
+    });
+    privateData.push({
+      numero: rows[i][0],
+      nombre: rows[i][1],
+      contacto: rows[i][2],
+      fecha: rows[i][3]
+    });
+  }
+
+  var output = {
+    public: publicData,
+    private: privateData
+  };
+
+  return ContentService
+    .createTextOutput(JSON.stringify(output))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = JSON.parse(e.postData.contents);
+  
+  var fecha = new Date().toLocaleDateString();
+  sheet.appendRow([data.numero, data.nombre, data.contacto, fecha]);
+
+  return ContentService.createTextOutput("ok");
+}*/
 // carga pública inicial
 cargarPublica();
 </script>
