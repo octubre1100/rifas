@@ -10,18 +10,16 @@
         max-width: 800px;
         margin: 20px auto;
         padding: 0 15px;
-        background-color: #f5f6fa;
+        background: #f5f6fa;
         color: #333;
       }
-
       h1,
       h2 {
         text-align: center;
         color: #2c3e50;
       }
-
       button {
-        background-color: #3498db;
+        background: #3498db;
         color: white;
         border: none;
         padding: 10px 14px;
@@ -32,9 +30,8 @@
         transition: background 0.2s;
       }
       button:hover {
-        background-color: #2980b9;
+        background: #2980b9;
       }
-
       input {
         padding: 8px;
         margin: 6px 0 12px 0;
@@ -44,7 +41,6 @@
         box-sizing: border-box;
         font-size: 14px;
       }
-
       table {
         width: 100%;
         border-collapse: collapse;
@@ -54,25 +50,21 @@
         overflow: hidden;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       }
-
       th,
       td {
         padding: 10px;
         text-align: left;
       }
-
       thead {
-        background-color: #34495e;
+        background: #34495e;
         color: white;
       }
-
       tbody tr:nth-child(even) {
-        background-color: #f9f9f9;
+        background: #f9f9f9;
       }
       tbody tr:hover {
-        background-color: #eef6fc;
+        background: #eef6fc;
       }
-
       #loginPanel,
       #formRegistro {
         background: white;
@@ -81,7 +73,6 @@
         margin: 15px 0;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       }
-
       #msg {
         margin-top: 10px;
         padding: 10px;
@@ -90,11 +81,11 @@
         display: none;
       }
       #msg.ok {
-        background-color: #d4edda;
+        background: #d4edda;
         color: #155724;
       }
       #msg.error {
-        background-color: #f8d7da;
+        background: #f8d7da;
         color: #721c24;
       }
     </style>
@@ -157,12 +148,16 @@
     <div id="msg"></div>
 
     <script>
-      // URL de la Web App
+      // URL de tu GAS
       const API_URL =
         "https://script.google.com/macros/s/AKfycbw3W_PHusBJhuUvopjdeCMtaWF5gAgJ2b4Cgsuf8Lfrxeod7dGaW90WXPE325oeqEey/exec";
+
+      // Token definido en el front-end
+      const FRONTEND_TOKEN = "rifaivt5";
+
       let token = sessionStorage.getItem("token") || null;
 
-      const $ = (sel) => document.querySelector(sel);
+      const $ = (s) => document.querySelector(s);
       const tablaPublicaBody = $("#tablaPublica tbody");
       const tablaCompletaBody = $("#tablaCompleta tbody");
       const msgBox = $("#msg");
@@ -183,15 +178,12 @@
 
       async function fetchPrivado() {
         try {
-          const res = await fetch(
-            API_URL + "?token=" + encodeURIComponent(token)
-          );
+          const res = await fetch(API_URL);
           const json = await res.json();
-          if (!json.ok) throw new Error(json.error || "Token inválido");
+          if (!json.ok) throw new Error(json.error || "Error al cargar datos");
           renderPrivado(json.data);
         } catch (e) {
           showMsg(e.message, true);
-          logout();
         }
       }
 
@@ -222,10 +214,14 @@
       }
 
       async function registrar() {
+        if (!token) {
+          showMsg("Debes validar el token primero.", true);
+          return;
+        }
+
         const numero = $("#numero").value.trim();
         const nombre = $("#nombre").value.trim();
         const contacto = $("#contacto").value.trim();
-
         if (!numero || !nombre) {
           showMsg("Número y nombre son obligatorios.", true);
           return;
@@ -239,7 +235,7 @@
           });
           const json = await res.json();
           if (!json.ok) {
-            showMsg(json.error || "Error al registrar.", true);
+            showMsg(json.error || "Error al registrar", true);
             return;
           }
           showMsg("Registro exitoso.");
@@ -269,36 +265,30 @@
         $("#tokenInput").focus();
       }
 
-      async function validarToken() {
+      function validarToken() {
         const t = $("#tokenInput").value.trim();
         if (!t) {
           showMsg("Ingresá el token.", true);
           return;
         }
-        try {
-          const res = await fetch(API_URL + "?token=" + encodeURIComponent(t));
-          const json = await res.json();
-          if (!json.ok) {
-            showMsg("Token inválido.", true);
-            return;
-          }
-          token = t;
-          sessionStorage.setItem("token", token);
-          showMsg("Token válido. Acceso concedido.");
-          loginPanel.style.display = "none";
-          formRegistro.style.display = "block";
-          cargarPrivado();
-        } catch {
-          showMsg("Error de red.", true);
+
+        if (t !== FRONTEND_TOKEN) {
+          showMsg("Token inválido", true);
+          return;
         }
+
+        token = t;
+        sessionStorage.setItem("token", token);
+        showMsg("Token válido. Acceso concedido.");
+        loginPanel.style.display = "none";
+        formRegistro.style.display = "block";
+        cargarPrivado();
       }
 
       async function cargarPublico() {
         await fetchPublic();
       }
-
       async function cargarPrivado() {
-        if (!token) return;
         await fetchPrivado();
       }
 
@@ -317,4 +307,3 @@
     </script>
   </body>
 </html>
-
