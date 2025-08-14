@@ -1,246 +1,319 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Rifa</title>
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-        background: #f5f5f5;
-    }
-    h2 {
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rifa IVT</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 0 15px;
+        background-color: #f5f6fa;
         color: #333;
-    }
-    table {
-        border-collapse: collapse;
-        width: 100%;
-        margin-bottom: 20px;
-    }
-    th, td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: left;
-    }
-    th {
-        background-color: #4CAF50;
+      }
+
+      h1,
+      h2 {
+        text-align: center;
+        color: #2c3e50;
+      }
+
+      button {
+        background-color: #3498db;
         color: white;
-    }
-    .private {
-        background: white;
-        padding: 15px;
-        border-radius: 5px;
-        display: none;
-    }
-    .form-input {
-        margin: 5px 0;
+        border: none;
+        padding: 10px 14px;
+        margin: 8px 0;
+        cursor: pointer;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: background 0.2s;
+      }
+      button:hover {
+        background-color: #2980b9;
+      }
+
+      input {
         padding: 8px;
+        margin: 6px 0 12px 0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
         width: 100%;
         box-sizing: border-box;
-    }
-    button {
-        padding: 8px 15px;
-        background: #4CAF50;
-        border: none;
+        font-size: 14px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        background: white;
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      th,
+      td {
+        padding: 10px;
+        text-align: left;
+      }
+
+      thead {
+        background-color: #34495e;
         color: white;
-        cursor: pointer;
-    }
-    button:hover {
-        background: #45a049;
-    }
-</style>
-</head>
-<body>
+      }
 
-<h2>Tabla Pública</h2>
-<table id="publicTable">
-    <thead>
+      tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+      tbody tr:hover {
+        background-color: #eef6fc;
+      }
+
+      #loginPanel,
+      #formRegistro {
+        background: white;
+        border-radius: 6px;
+        padding: 16px;
+        margin: 15px 0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      #msg {
+        margin-top: 10px;
+        padding: 10px;
+        border-radius: 6px;
+        font-weight: bold;
+        display: none;
+      }
+      #msg.ok {
+        background-color: #d4edda;
+        color: #155724;
+      }
+      #msg.error {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🎟️ Rifa IVT 5°</h1>
+
+    <button id="btnShowLogin">
+      🔑 Ingresar token para registrar y ver contactos
+    </button>
+
+    <div id="loginPanel" style="display: none">
+      <label for="tokenInput">Token:</label>
+      <input
+        type="password"
+        id="tokenInput"
+        placeholder="Escribe tu token aquí"
+      />
+      <button id="btnLogin">Validar token</button>
+    </div>
+
+    <h2>Lista de números ocupados</h2>
+    <table id="tablaPublica">
+      <thead>
         <tr>
-            <th>Número</th>
-            <th>Nombre</th>
+          <th>Número</th>
+          <th>Nombre</th>
         </tr>
-    </thead>
-    <tbody></tbody>
-</table>
-
-<h2>Acceso Privado</h2>
-<input type="password" id="password" class="form-input" placeholder="Contraseña">
-<button onclick="checkPassword()">Ingresar</button>
-
-<div id="privateSection" class="private">
-    <h3>Tabla Privada</h3>
-    <table id="privateTable">
-        <thead>
-            <tr>
-                <th>Número</th>
-                <th>Nombre</th>
-                <th>Contacto</th>
-                <th>Fecha</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
+      </thead>
+      <tbody></tbody>
     </table>
 
-    <h3>Registrar Nuevo</h3>
-    <input type="number" id="numero" class="form-input" placeholder="Número">
-    <input type="text" id="nombre" class="form-input" placeholder="Nombre">
-    <input type="text" id="contacto" class="form-input" placeholder="Contacto">
-    <button onclick="registrar()">Registrar</button>
-</div>
+    <div id="formRegistro" style="display: none">
+      <h2>Registro de número</h2>
+      <label for="numero">Número:</label>
+      <input type="number" id="numero" min="1" placeholder="Ej. 15" />
 
-<script>
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbz2k1YPW4dEG4Hxb9A9J_-9b1MhakBSD-6x7fxduME62Otw0LnWp66IMkNazJH1jG7p/exec"; // pega la URL EXACTA del deploy
-const PASSWORD = "rifaivt5"; // tu contraseña
+      <label for="nombre">Nombre:</label>
+      <input type="text" id="nombre" placeholder="Ej. Juan Pérez" />
 
-function showError(msg) {
-  console.error(msg);
-  let e = document.getElementById("errorBox");
-  if (!e) {
-    e = document.createElement("div");
-    e.id = "errorBox";
-    e.style.color = "red";
-    document.body.insertBefore(e, document.body.firstChild);
-  }
-  e.textContent = msg;
-}
+      <label for="contacto">Contacto:</label>
+      <input type="text" id="contacto" placeholder="Teléfono o email" />
 
-function safeFetchJSON(url, opts) {
-  return fetch(url, opts).then(res => res.text()).then(text => {
-    // Registrar la respuesta cruda para debug
-    console.log("RAW response from server:", text);
-    try {
-      return JSON.parse(text);
-    } catch (err) {
-      throw new Error("Respuesta no JSON o mal formada: " + text);
-    }
-  });
-}
+      <button id="btnRegistrar">Registrar</button>
 
-function cargarPublica() {
-  safeFetchJSON(SHEET_URL)
-  .then(data => {
-    if (!data || data.status !== "success" || !Array.isArray(data.public)) {
-      showError("La respuesta no contiene 'public'. Ver consola (RAW).");
-      return;
-    }
-    const tbody = document.querySelector("#publicTable tbody");
-    tbody.innerHTML = "";
-    data.public.forEach(row => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${row.numero}</td><td>${row.nombre}</td>`;
-      tbody.appendChild(tr);
-    });
-  })
-  .catch(err => {
-    showError(err.message);
-  });
-}
+      <h2>Lista completa (con contacto)</h2>
+      <table id="tablaCompleta">
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Nombre</th>
+            <th>Contacto</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
 
-function cargarPrivada() {
-  safeFetchJSON(SHEET_URL)
-  .then(data => {
-    if (!data || data.status !== "success" || !Array.isArray(data.private)) {
-      showError("La respuesta no contiene 'private'. Ver consola (RAW).");
-      return;
-    }
-    const tbody = document.querySelector("#privateTable tbody");
-    tbody.innerHTML = "";
-    data.private.forEach(row => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${row.numero}</td><td>${row.nombre}</td><td>${row.contacto}</td><td>${row.fecha}</td>`;
-      tbody.appendChild(tr);
-    });
-  })
-  .catch(err => {
-    showError(err.message);
-  });
-}
+    <div id="msg"></div>
 
-function checkPassword() {
-  const pass = document.getElementById("password").value;
-  if (pass === PASSWORD) {
-    document.getElementById("privateSection").style.display = "block";
-    cargarPrivada();
-  } else {
-    alert("Contraseña incorrecta");
-  }
-}
+    <script>
+      // URL de la Web App
+      const API_URL =
+        "https://script.google.com/macros/s/AKfycbw3W_PHusBJhuUvopjdeCMtaWF5gAgJ2b4Cgsuf8Lfrxeod7dGaW90WXPE325oeqEey/exec";
+      let token = sessionStorage.getItem("token") || null;
 
-function registrar() {
-  const numero = document.getElementById("numero").value;
-  const nombre = document.getElementById("nombre").value;
-  const contacto = document.getElementById("contacto").value;
+      const $ = (sel) => document.querySelector(sel);
+      const tablaPublicaBody = $("#tablaPublica tbody");
+      const tablaCompletaBody = $("#tablaCompleta tbody");
+      const msgBox = $("#msg");
+      const loginPanel = $("#loginPanel");
+      const formRegistro = $("#formRegistro");
+      const btnShowLogin = $("#btnShowLogin");
 
-  if (!numero || !nombre || !contacto) { alert("Completa todos los campos"); return; }
-
-  const data = { numero, nombre, contacto };
-
-  // Envío usando text/plain para evitar preflight
-  fetch(SHEET_URL, {
-    method: "POST",
-    redirect: "follow",
-    body: JSON.stringify(data),
-    headers: { "Content-Type": "text/plain" }
-  })
-  .then(res => res.text())
-  .then(text => {
-    console.log("RAW POST response:", text);
-    try {
-      const parsed = JSON.parse(text);
-      if (parsed.status === "success") {
-        alert("Registrado correctamente");
-        cargarPublica();
-        cargarPrivada();
-      } else {
-        showError("POST devolvió error: " + (parsed.message || text));
+      async function fetchPublic() {
+        try {
+          const res = await fetch(API_URL);
+          const json = await res.json();
+          if (!json.ok) throw new Error(json.error || "Error al cargar datos");
+          renderPublic(json.data);
+        } catch (e) {
+          showMsg(e.message, true);
+        }
       }
-    } catch (err) {
-      showError("Respuesta POST no JSON: " + text);
-    }
-  })
-  .catch(err => showError(err.message));
-}
-/*function doGet(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var rows = sheet.getDataRange().getValues();
-  
-  var publicData = [];
-  var privateData = [];
 
-  for (var i = 1; i < rows.length; i++) {
-    publicData.push({
-      numero: rows[i][0],
-      nombre: rows[i][1]
-    });
-    privateData.push({
-      numero: rows[i][0],
-      nombre: rows[i][1],
-      contacto: rows[i][2],
-      fecha: rows[i][3]
-    });
-  }
+      async function fetchPrivado() {
+        try {
+          const res = await fetch(
+            API_URL + "?token=" + encodeURIComponent(token)
+          );
+          const json = await res.json();
+          if (!json.ok) throw new Error(json.error || "Token inválido");
+          renderPrivado(json.data);
+        } catch (e) {
+          showMsg(e.message, true);
+          logout();
+        }
+      }
 
-  var output = {
-    public: publicData,
-    private: privateData
-  };
+      function renderPublic(data) {
+        tablaPublicaBody.innerHTML = "";
+        data.forEach(({ numero, nombre }) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${numero}</td><td>${nombre}</td>`;
+          tablaPublicaBody.appendChild(tr);
+        });
+      }
 
-  return ContentService
-    .createTextOutput(JSON.stringify(output))
-    .setMimeType(ContentService.MimeType.JSON);
-}
+      function renderPrivado(data) {
+        tablaCompletaBody.innerHTML = "";
+        data.forEach(({ numero, nombre, contacto, fecha }) => {
+          const fechaStr = fecha ? new Date(fecha).toLocaleString() : "";
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${numero}</td><td>${nombre}</td><td>${contacto}</td><td>${fechaStr}</td>`;
+          tablaCompletaBody.appendChild(tr);
+        });
+      }
 
-function doPost(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var data = JSON.parse(e.postData.contents);
-  
-  var fecha = new Date().toLocaleDateString();
-  sheet.appendRow([data.numero, data.nombre, data.contacto, fecha]);
+      function showMsg(text, isError = false) {
+        msgBox.textContent = text;
+        msgBox.className = isError ? "error" : "ok";
+        msgBox.style.display = "block";
+        setTimeout(() => (msgBox.style.display = "none"), 3500);
+      }
 
-  return ContentService.createTextOutput("ok");
-}*/
-// carga pública inicial
-cargarPublica();
-</script>
-</body>
+      async function registrar() {
+        const numero = $("#numero").value.trim();
+        const nombre = $("#nombre").value.trim();
+        const contacto = $("#contacto").value.trim();
+
+        if (!numero || !nombre) {
+          showMsg("Número y nombre son obligatorios.", true);
+          return;
+        }
+
+        try {
+          const res = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ numero, nombre, contacto, token }),
+          });
+          const json = await res.json();
+          if (!json.ok) {
+            showMsg(json.error || "Error al registrar.", true);
+            return;
+          }
+          showMsg("Registro exitoso.");
+          cargarPrivado();
+          cargarPublico();
+          $("#numero").value = "";
+          $("#nombre").value = "";
+          $("#contacto").value = "";
+        } catch (e) {
+          showMsg("Error de red.", true);
+        }
+      }
+
+      function logout() {
+        token = null;
+        sessionStorage.removeItem("token");
+        formRegistro.style.display = "none";
+        loginPanel.style.display = "none";
+        btnShowLogin.style.display = "inline-block";
+        cargarPublico();
+      }
+
+      function login() {
+        loginPanel.style.display = "block";
+        btnShowLogin.style.display = "none";
+        $("#tokenInput").value = "";
+        $("#tokenInput").focus();
+      }
+
+      async function validarToken() {
+        const t = $("#tokenInput").value.trim();
+        if (!t) {
+          showMsg("Ingresá el token.", true);
+          return;
+        }
+        try {
+          const res = await fetch(API_URL + "?token=" + encodeURIComponent(t));
+          const json = await res.json();
+          if (!json.ok) {
+            showMsg("Token inválido.", true);
+            return;
+          }
+          token = t;
+          sessionStorage.setItem("token", token);
+          showMsg("Token válido. Acceso concedido.");
+          loginPanel.style.display = "none";
+          formRegistro.style.display = "block";
+          cargarPrivado();
+        } catch {
+          showMsg("Error de red.", true);
+        }
+      }
+
+      async function cargarPublico() {
+        await fetchPublic();
+      }
+
+      async function cargarPrivado() {
+        if (!token) return;
+        await fetchPrivado();
+      }
+
+      btnShowLogin.addEventListener("click", login);
+      $("#btnLogin").addEventListener("click", validarToken);
+      $("#btnRegistrar").addEventListener("click", registrar);
+
+      window.addEventListener("DOMContentLoaded", () => {
+        cargarPublico();
+        if (token) {
+          formRegistro.style.display = "block";
+          btnShowLogin.style.display = "none";
+          cargarPrivado();
+        }
+      });
+    </script>
+  </body>
 </html>
