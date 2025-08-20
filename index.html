@@ -233,6 +233,76 @@
         <li>O comunicarse directamente con un alumno de 5° año.</li>
       </ul>
     </div>
+    <h2>
+      📊 Disponibilidad de números
+      <button id="toggleDisponibilidad" style="float: right">➕ Mostrar</button>
+    </h2>
+    <div id="tablaDisponibilidad" style="display: none"></div>
+
+    <!-- Pantalla de carga -->
+    <div id="loader">
+      <div class="spinner"></div>
+      <p>Cargando datos de la rifa...</p>
+    </div>
+
+    <style>
+      /* Loader */
+      #loader {
+        position: fixed;
+        inset: 0;
+        background: #f5f6fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        z-index: 9999;
+        font-size: 18px;
+        color: #2c3e50;
+      }
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 6px solid #ccc;
+        border-top: 6px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 12px;
+      }
+      @keyframes spin {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Grid de números */
+      .grid-numeros {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+        gap: 6px;
+        margin-top: 15px;
+      }
+      .num {
+        padding: 8px;
+        border-radius: 6px;
+        text-align: center;
+        font-weight: bold;
+        cursor: default;
+        transition: transform 0.2s;
+      }
+      .num:hover {
+        transform: scale(1.1);
+      }
+      .num.disponible {
+        background: #d4edda;
+        color: #155724;
+      }
+      .num.ocupado {
+        background: #f8d7da;
+        color: #721c24;
+        text-decoration: line-through;
+      }
+    </style>
+
     <h2>Lista de números vendidos</h2>
     <table id="tablaPublica">
       <thead>
@@ -429,6 +499,66 @@
           cargarPrivado();
         }
       });
+      const TOTAL_NUMEROS = 1000; // 🔹 Ajusta aquí el total de la rifa
+      const tablaDisp = document.getElementById("tablaDisponibilidad");
+      const toggleBtn = document.getElementById("toggleDisponibilidad");
+      const loader = document.getElementById("loader");
+
+      async function renderDisponibilidad() {
+        try {
+          const res = await fetch(API_URL);
+          const json = await res.json();
+          if (!json.ok) throw new Error(json.error || "Error al cargar");
+
+          const ocupados = json.data.map((d) => parseInt(d.numero, 10));
+          tablaDisp.innerHTML = "";
+          const grid = document.createElement("div");
+          grid.className = "grid-numeros";
+
+          for (let i = 1; i <= TOTAL_NUMEROS; i++) {
+            const div = document.createElement("div");
+            div.classList.add("num");
+            div.textContent = i;
+            if (ocupados.includes(i)) {
+              div.classList.add("ocupado");
+            } else {
+              div.classList.add("disponible");
+            }
+            grid.appendChild(div);
+          }
+          tablaDisp.appendChild(grid);
+        } catch (e) {
+          console.error(e);
+          tablaDisp.textContent = "Error al cargar disponibilidad";
+        }
+      }
+
+      // 🔹 Toggle minimizar/maximizar
+      toggleBtn.addEventListener("click", () => {
+        if (tablaDisp.style.display === "none") {
+          tablaDisp.style.display = "block";
+          toggleBtn.textContent = "➖ Ocultar";
+        } else {
+          tablaDisp.style.display = "none";
+          toggleBtn.textContent = "➕ Mostrar";
+        }
+      });
+
+      async function iniciarPagina() {
+        // Cargar ambas tablas antes de mostrar la página
+        try {
+          await Promise.all([fetchPublic(), renderDisponibilidad()]);
+        } catch (e) {
+          console.error("Error inicial:", e);
+        } finally {
+          loader.style.display = "none"; // quitar loader
+          document.body.style.overflow = "auto"; // habilitar scroll
+        }
+      }
+
+      // 🔹 Bloquea la página hasta cargar
+      document.body.style.overflow = "hidden";
+      window.addEventListener("DOMContentLoaded", iniciarPagina);
     </script>
   </body>
 </html>
