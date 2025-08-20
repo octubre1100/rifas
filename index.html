@@ -7,44 +7,61 @@
     <style>
       body {
         font-family: "Segoe UI", Tahoma, sans-serif;
-        max-width: 800px;
+        max-width: 850px;
         margin: 20px auto;
         padding: 0 15px;
         background: #f5f6fa;
         color: #333;
       }
+
       h1,
       h2 {
         text-align: center;
         color: #2c3e50;
+        margin-bottom: 15px;
       }
+
+      p {
+        text-align: center;
+        line-height: 1.5;
+      }
+
       button {
         background: #3498db;
         color: white;
         border: none;
-        padding: 10px 14px;
+        padding: 10px 16px;
         margin: 8px 0;
         cursor: pointer;
         border-radius: 6px;
         font-size: 14px;
-        transition: background 0.2s;
+        transition: background 0.2s, transform 0.1s;
+        display: inline-block;
       }
       button:hover {
         background: #2980b9;
+        transform: scale(1.03);
       }
+
       input {
-        padding: 8px;
-        margin: 6px 0 12px 0;
+        padding: 10px;
+        margin: 6px 0 14px 0;
         border: 1px solid #ccc;
         border-radius: 4px;
         width: 100%;
         box-sizing: border-box;
         font-size: 14px;
+        transition: border 0.2s;
       }
+      input:focus {
+        border: 1px solid #3498db;
+        outline: none;
+      }
+
       table {
         width: 100%;
         border-collapse: collapse;
-        margin-top: 10px;
+        margin-top: 15px;
         background: white;
         border-radius: 6px;
         overflow: hidden;
@@ -65,6 +82,7 @@
       tbody tr:hover {
         background: #eef6fc;
       }
+
       #loginPanel,
       #formRegistro {
         background: white;
@@ -73,12 +91,14 @@
         margin: 15px 0;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       }
+
       #msg {
         margin-top: 10px;
-        padding: 10px;
+        padding: 12px;
         border-radius: 6px;
         font-weight: bold;
         display: none;
+        text-align: center;
       }
       #msg.ok {
         background: #d4edda;
@@ -88,12 +108,45 @@
         background: #f8d7da;
         color: #721c24;
       }
+      .card {
+        background: white;
+        border-radius: 6px;
+        padding: 18px;
+        margin: 20px 0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .card h2 {
+        color: #2c3e50;
+        margin-bottom: 10px;
+      }
+
+      .card h3 {
+        margin-top: 15px;
+        color: #34495e;
+      }
+
+      .grid-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .grid-list ul {
+        background: #f9f9f9;
+        padding: 10px 14px;
+        border-radius: 6px;
+        list-style-type: "✔ ";
+      }
+      .grid-list li {
+        margin: 5px 0;
+      }
     </style>
   </head>
   <body>
     <h1>🎟️ Rifa IVT 5°</h1>
 
-    <button id="btnShowLogin">
+    <button id="btnShowLogin" style="display: none">
       🔑 Ingresar token para registrar y ver contactos
     </button>
 
@@ -104,10 +157,83 @@
         id="tokenInput"
         placeholder="Escribe tu token aquí"
       />
-      <button id="btnLogin">Validar token</button>
+      <button id="btnLogin" style="display: none">Validar token</button>
     </div>
 
-    <h2>Lista de números ocupados</h2>
+    <div class="card">
+      <h2>🎯 Objetivo de la rifa</h2>
+      <p>
+        Esta rifa tiene como finalidad financiar el
+        <strong>viaje educativo 2026</strong> de los estudiantes de
+        <strong>5° año del Instituto Visión Tecnológica</strong>. Además,
+        fomenta el trabajo en equipo y la organización entre los alumnos.
+      </p>
+    </div>
+
+    <!-- Sección premios -->
+    <div class="card">
+      <h2>🏆 Premios</h2>
+      <p>Se prepararán dos canastas como premio para los ganadores:</p>
+      <ul>
+        <li><strong>Canasta 1:</strong> alimentos y productos de higiene.</li>
+        <li><strong>Canasta 2:</strong> productos de higiene.</li>
+      </ul>
+
+      <h3>Contenido principal de las canastas:</h3>
+      <div class="grid-list">
+        <ul>
+          <li>Harina</li>
+          <li>Arroz</li>
+          <li>Fideos / Pastas</li>
+          <li>Azúcar</li>
+          <li>Aceite</li>
+          <li>Leche en polvo</li>
+          <li>Yerba o té</li>
+          <li>Conservas (atún, tomate, arvejas)</li>
+        </ul>
+        <ul>
+          <li>Jabón de tocador</li>
+          <li>Shampoo</li>
+          <li>Papel higiénico</li>
+          <li>Pasta dental</li>
+          <li>Detergente</li>
+          <li>Lavandina</li>
+          <li>Jabón para ropa</li>
+          <li>Esponjas y trapos</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Sección sorteo -->
+    <div class="card">
+      <h2>📅 Sorteo</h2>
+      <p>
+        El sorteo se realizará el <strong>10 de septiembre de 2025</strong>, de
+        acuerdo con la <strong>Quiniela Vespertina Nacional</strong>.
+      </p>
+      <p>
+        Los premios serán entregados durante la
+        <strong>segunda semana de septiembre</strong>, contactando directamente
+        a los ganadores.
+      </p>
+    </div>
+
+    <!-- Sección compra -->
+    <div class="card">
+      <h2>💵 Cómo participar</h2>
+      <p>
+        2 números tienen un valor de <strong>$3.500</strong>. Para adquirirlo,
+        puede:
+      </p>
+      <ul>
+        <li>
+          Enviar su nombre y los números deseados al correo:
+          <strong>48910735@ivt.edu.ar</strong>.
+        </li>
+        <li>O comunicarse directamente con un alumno de 5° año.</li>
+      </ul>
+    </div>
+    <h2>Lista de números vendidos</h2>
     <table id="tablaPublica">
       <thead>
         <tr>
@@ -131,7 +257,7 @@
 
       <button id="btnRegistrar">Registrar</button>
 
-      <h2>Lista completa (con contacto)</h2>
+      <h2>Lista completa (con contactos)</h2>
       <table id="tablaCompleta">
         <thead>
           <tr>
@@ -146,7 +272,6 @@
     </div>
 
     <div id="msg"></div>
-
     <script>
       // URL de tu GAS
       const API_URL =
